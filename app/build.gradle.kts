@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.secrets.gradle)
 }
 
 android {
@@ -34,6 +35,13 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true  // ← AGREGAR ESTA LÍNEA
+    }
+
+    //noinspection WrongGradleMethod
+    secrets {
+        propertiesFileName = "local.properties"
+        ignoreList.add("sdk.dir")
     }
 }
 
@@ -49,6 +57,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.coil.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
