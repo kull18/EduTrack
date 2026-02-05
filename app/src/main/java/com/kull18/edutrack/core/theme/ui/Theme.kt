@@ -1,53 +1,66 @@
 package com.kull18.edutrack.core.theme.ui
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Primary500,
+    onPrimary = White,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = Primary600,
+    onSecondary = White,
+
+    // ✅ usamos tertiary para success
+    tertiary = Success500,
+    onTertiary = White,
+
+    background = White,
+    onBackground = Neutral900,
+
+    surface = White,
+    onSurface = Neutral900,
+
+    // ✅ textos secundarios / placeholders
+    surfaceVariant = Neutral200,
+    onSurfaceVariant = Neutral600,
+
+    error = Error500,
+    onError = White,
+
+    outline = Neutral200
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Primary500,
+    onPrimary = White,
+
+    secondary = Primary600,
+    onSecondary = White,
+
+    tertiary = Success500,
+    onTertiary = White,
+
+    background = Neutral900,
+    onBackground = White,
+
+    surface = Neutral900,
+    onSurface = White,
+
+    surfaceVariant = Neutral400,
+    onSurfaceVariant = Neutral400,
+
+    error = Error500,
+    onError = White,
+
+    outline = Neutral400
 )
 
 @Composable
 fun EduTrackTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
