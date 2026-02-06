@@ -8,8 +8,11 @@ import androidx.navigation.compose.rememberNavController
 import com.kull18.edutrack.core.di.AppContainer
 import com.kull18.edutrack.core.theme.ui.EduTrackTheme
 import com.kull18.edutrack.features.auth.di.LoginModule
-import com.kull18.edutrack.features.courses_list_instructor.di.CourseModule
-import com.kull18.edutrack.features.login.presentation.screens.LoginScreen
+import com.kull18.edutrack.features.course_create.di.CreateCourseModule
+import com.kull18.edutrack.features.course_delete.di.CourseDeleteModule
+import com.kull18.edutrack.features.course_detail.di.CourseDetailModule
+import com.kull18.edutrack.features.course_edit.di.CourseEditModule
+import com.kull18.edutrack.features.courses_list.di.CourseModule
 import com.kull18.edutrack.features.register.di.RegisterModule
 import com.kull18.edutrack.presentation.navigation.AppNavGraph
 
@@ -21,7 +24,10 @@ class MainActivity : ComponentActivity() {
         val loginModule = LoginModule(appContainer)
         val registerModule = RegisterModule(appContainer)
         val courserInstructorModule = CourseModule(appContainer)
-
+        val creteCourseInstructorModule = CreateCourseModule(appContainer)
+        val courseDetailInstructorModule = CourseDetailModule(appContainer)
+        val courseEditInstructorModule = CourseEditModule(appContainer)
+        val courseDeleteModule = CourseDeleteModule(appContainer)
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -31,6 +37,10 @@ class MainActivity : ComponentActivity() {
                     loginFactory = loginModule.provideLoginViewModelFactory(),
                     registerFactory = registerModule.provideRegisterViewModelFactory(),
                     courseListFactory = courserInstructorModule.provideCourseListViewModelFactory(),
+                    createCourseFactory = creteCourseInstructorModule.provideCreateCourseViewModelFactory(),
+                    courseDetailFactory = courseDetailInstructorModule.provideCourseDetailViewModelFactory(),
+                    editCourseFactory = courseEditInstructorModule.provideEditCourseViewModelFactory(),
+                    deleteFactory = courseDeleteModule.provideDeleteCourseViewModelFactory()
                 )
             }
         }

@@ -1,8 +1,19 @@
 package com.kull18.edutrack.core.network
 
-import com.kull18.edutrack.features.courses_list_instructor.data.datasources.models.CourseActionResponse
-import com.kull18.edutrack.features.courses_list_instructor.data.datasources.models.CourseDTO
-import com.kull18.edutrack.features.courses_list_instructor.data.datasources.models.CourseRequest
+import com.kull18.edutrack.features.course_create.data.datasources.models.CourseActionRequest
+import com.kull18.edutrack.features.course_create.data.datasources.models.CourseActionResponse
+import com.kull18.edutrack.features.course_delete.data.datasources.models.CourseDeleteDTO
+import com.kull18.edutrack.features.course_detail.data.datasources.models.CourseDetailDTO
+import com.kull18.edutrack.features.course_detail.domain.entities.CourseDetial
+import com.kull18.edutrack.features.course_edit.data.datasources.models.CourseEditRequest
+import com.kull18.edutrack.features.course_edit.data.datasources.models.CourseEditResponse
+import com.kull18.edutrack.features.course_edit.data.datasources.models.CourseGetByIdDTO
+import com.kull18.edutrack.features.courses_list.data.datasources.models.CourseDTO
+import com.kull18.edutrack.features.courses_list.data.datasources.models.CourseRequest
+import com.kull18.edutrack.features.login.data.datasources.models.LoginRequest
+import com.kull18.edutrack.features.login.data.datasources.models.LoginResponse
+import com.kull18.edutrack.features.register.data.datasources.models.RegisterRequest
+import com.kull18.edutrack.features.register.data.datasources.models.RegisterResponse
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -23,31 +34,41 @@ interface CourseApi {
     @POST("api/cursos")
     suspend fun createCourse(
         @Header("Authorization") token: String,
-        @Body course: CourseRequest
+        @Body course: CourseActionRequest
     ): CourseActionResponse
 
     @GET("api/cursos/{id}")
     suspend fun getCourseById(
         @Header("Authorization") token: String,
         @Path("id") courseId: Int
-    ): CourseDTO
+    ): CourseGetByIdDTO
+
+    @GET("api/cursos/{id}")
+    suspend fun getCourseByIdDetail(
+        @Header("Authorization") token: String,
+        @Path("id") courseId: Int
+    ): CourseDetailDTO
 
     @PUT("api/cursos/{id}")
     suspend fun updateCourse(
         @Header("Authorization") token: String,
         @Path("id") courseId: Int,
-        @Body course: CourseRequest
-    ): CourseActionResponse
+        @Body course: CourseEditRequest
+    ): CourseEditResponse
 
     @DELETE("api/cursos/{id}")
     suspend fun deleteCourse(
         @Header("Authorization") token: String,
         @Path("id") courseId: Int
-    ): Unit
+    ): CourseDeleteDTO
 
-    @PATCH("api/cursos/{id}/toggle-activo")
-    suspend fun toggleCourseActive(
-        @Header("Authorization") token: String,
-        @Path("id") courseId: Int
-    ): CourseActionResponse
+    @POST("api/auth/login")
+    suspend fun loginUser(
+        @Body loginRequest: LoginRequest
+    ): LoginResponse
+
+    @POST("api/auth/register")
+    suspend fun registerUser(
+        @Body user: RegisterRequest
+    ): RegisterResponse
 }

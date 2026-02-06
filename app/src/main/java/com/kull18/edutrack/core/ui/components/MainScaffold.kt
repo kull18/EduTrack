@@ -14,12 +14,14 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun MainScaffold(
     topAppBar: @Composable (() -> Unit)? = null,
+    snackbackHost: @Composable (() -> Unit)? = null,
     bottomAppBar: @Composable (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
         topBar = { topAppBar?.invoke() },
-        bottomBar = { bottomAppBar?.invoke() }
+        bottomBar = { bottomAppBar?.invoke() },
+        snackbarHost = { snackbackHost?.invoke() }
     ) {paddingValues ->
         Box(
             modifier = Modifier.padding(paddingValues)
