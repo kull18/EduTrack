@@ -174,7 +174,12 @@ fun AppNavGraph(
                     navController.popBackStack()
                 },
                 onSuccess = {
-                    navController.popBackStack()
+                    navController.navigate(AppRoutes.InstructorCourses.route) {
+                        popUpTo(AppRoutes.InstructorCourses.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
