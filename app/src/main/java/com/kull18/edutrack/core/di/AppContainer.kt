@@ -32,15 +32,15 @@ class AppContainer(context: Context) {
         retrofit.create(CourseApi::class.java)
     }
 
-    val courseRepository: CourseRepository by lazy {
+    val courseRepository: CourseRepositoryImpl by lazy {
         CourseRepositoryImpl(courseApi, tokenDataStore)
     }
 
-    val createCourseRepository: CreateCourseRepository by lazy {
+    val createCourseRepository: CreateCourseRepositoryImpl by lazy {
         CreateCourseRepositoryImpl(courseApi, tokenDataStore)
     }
 
-    val courseDetailRepository: CourseDetailRepository by lazy {
+    val courseDetailRepository: CourseDetailRepositoryImpl by lazy {
         CourseDetailRepositoryImpl(courseApi, tokenDataStore)
     }
 
