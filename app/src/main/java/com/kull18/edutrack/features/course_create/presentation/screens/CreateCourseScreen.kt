@@ -9,21 +9,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.app.ui.organisms.CourseFormOrganism
 import com.example.app.ui.organisms.TopBarOrganism
 import com.kull18.edutrack.core.ui.components.MainScaffold
 import com.kull18.edutrack.features.course_create.presentation.viewmodels.CreateCourseViewModel
-import com.kull18.edutrack.features.course_create.presentation.viewmodels.CreateCourseViewModelFactory
 
 @Composable
 fun CreateCourseScreen(
-    factory: CreateCourseViewModelFactory,
     onBackClick: () -> Unit,
     onSuccess: () -> Unit
 ) {
-    val viewModel: CreateCourseViewModel = viewModel(factory = factory)
+    val viewModel: CreateCourseViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val courseName by viewModel.courseName.collectAsStateWithLifecycle()
     val description by viewModel.courseDescription.collectAsStateWithLifecycle()

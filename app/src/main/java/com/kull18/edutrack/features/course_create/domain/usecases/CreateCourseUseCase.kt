@@ -3,8 +3,9 @@ package com.kull18.edutrack.features.course_create.domain.usecases
 import com.kull18.edutrack.features.course_create.data.datasources.models.CourseActionRequest
 import com.kull18.edutrack.features.course_create.domain.entities.CourseCreate
 import com.kull18.edutrack.features.course_create.domain.repositories.CreateCourseRepository
+import javax.inject.Inject
 
-class CreateCourseUseCase(
+class CreateCourseUseCase @Inject constructor(
     private val repository: CreateCourseRepository
 ) {
 

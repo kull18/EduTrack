@@ -6,8 +6,9 @@ import com.kull18.edutrack.features.courses_list.data.datasources.mapper.toDomai
 import com.kull18.edutrack.features.courses_list.domain.entities.Course
 import com.kull18.edutrack.features.courses_list.domain.repositories.CourseRepository
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
-class CourseRepositoryImpl(
+class CourseRepositoryImpl @Inject constructor(
     private val api: CourseApi,
     private val tokenDataStore: TokenDataStore
 ) : CourseRepository {

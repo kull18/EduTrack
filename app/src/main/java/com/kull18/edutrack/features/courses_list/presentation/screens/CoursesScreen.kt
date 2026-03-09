@@ -25,24 +25,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kull18.edutrack.features.courses_list.presentation.components.organims.CoursesTopBar
 import com.kull18.edutrack.features.courses_list.presentation.components.organisms.CourseCard
 import com.kull18.edutrack.features.courses_list.presentation.viewmodels.CourseListViewModel
-import com.kull18.edutrack.features.courses_list.presentation.viewmodels.CourseListViewModelFactory
 
 
 @Composable
 fun CoursesScreen(
-    factory: CourseListViewModelFactory,
     onEditClick: (Int) -> Unit = {},
     onViewClick: (Int) -> Unit = {},
     onDeleteClick: (Int, String) -> Unit = { _, _ -> },  // Cambiar firma
     onCreateCourseClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val viewModel: CourseListViewModel = viewModel(factory = factory)
+    val viewModel: CourseListViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

@@ -3,8 +3,9 @@ package com.kull18.edutrack.features.course_edit.domain.usecases
 
 import com.kull18.edutrack.features.course_edit.domain.entities.Course
 import com.kull18.edutrack.features.course_edit.domain.repositories.CourseEditRepository
+import javax.inject.Inject
 
-class GetCourseByIdUseCase(
+class GetCourseByIdUseCase @Inject constructor(
     private val repository: CourseEditRepository
 ) {
     suspend operator fun invoke(courseId: Int): Result<Course> {

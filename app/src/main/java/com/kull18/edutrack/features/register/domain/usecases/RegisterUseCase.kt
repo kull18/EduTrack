@@ -3,8 +3,9 @@ package com.kull18.edutrack.features.auth.domain.usecases
 import com.kull18.edutrack.features.register.domain.entities.User
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterRequest
 import com.kull18.edutrack.features.register.domain.repositories.RegisterRepository
+import javax.inject.Inject
 
-class RegisterUseCase(
+class RegisterUseCase @Inject constructor(
     private val repository: RegisterRepository
 ) {
 

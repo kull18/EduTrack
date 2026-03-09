@@ -7,8 +7,9 @@ import com.kull18.edutrack.features.course_create.domain.repositories.CreateCour
 import com.kull18.edutrack.features.course_create.data.datasources.mapper.toDomain
 import com.kull18.edutrack.features.course_create.data.datasources.models.CourseActionRequest
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
-class CreateCourseRepositoryImpl(
+class CreateCourseRepositoryImpl @Inject constructor(
     private val api: CourseApi,
     private val tokenDataStore: TokenDataStore
 ) : CreateCourseRepository {

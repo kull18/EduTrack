@@ -3,8 +3,9 @@ package com.kull18.edutrack.features.course_delete.domain.usecases
 
 import com.kull18.edutrack.features.course_delete.domain.entities.CourseDelete
 import com.kull18.edutrack.features.course_delete.domain.repositories.CourseDeleteRepository
+import javax.inject.Inject
 
-class DeleteCourseUseCase(
+class DeleteCourseUseCase @Inject constructor(
     private val repository: CourseDeleteRepository
 ) {
     suspend operator fun invoke(courseId: Int): Result<CourseDelete> {

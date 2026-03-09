@@ -6,12 +6,15 @@ import com.kull18.edutrack.features.auth.domain.usecases.RegisterUseCase
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterRequest
 import com.kull18.edutrack.features.register.data.datasources.models.UserRole
 import com.kull18.edutrack.features.register.presentation.screens.RegisterUIState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RegisterViewModel(
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase
 ) : ViewModel() {
 

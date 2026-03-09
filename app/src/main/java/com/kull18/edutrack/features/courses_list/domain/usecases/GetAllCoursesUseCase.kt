@@ -2,8 +2,9 @@ package com.kull18.edutrack.features.courses_list.domain.usecases
 
 import com.kull18.edutrack.features.courses_list.domain.entities.Course
 import com.kull18.edutrack.features.courses_list.domain.repositories.CourseRepository
+import javax.inject.Inject
 
-class GetAllCoursesUseCase(
+class GetAllCoursesUseCase @Inject constructor(
     private val repository: CourseRepository
 ) {
 

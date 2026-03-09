@@ -5,12 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.course_create.data.datasources.models.CourseActionRequest
 import com.kull18.edutrack.features.course_create.domain.usecases.CreateCourseUseCase
 import com.kull18.edutrack.features.course_create.presentation.screens.CreateCourseUIState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CreateCourseViewModel(
+@HiltViewModel
+class CreateCourseViewModel @Inject constructor(
     private val createCourseUseCase: CreateCourseUseCase
 ) : ViewModel() {
 

@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.course_edit.data.datasources.models.CourseEditRequest
 import com.kull18.edutrack.features.course_edit.domain.usecases.GetCourseByIdUseCase
 import com.kull18.edutrack.features.course_edit.domain.usecases.UpdateCourseUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class EditCourseViewModel(
+@HiltViewModel
+class EditCourseViewModel @Inject constructor(
     private val getCourseByIdUseCase: GetCourseByIdUseCase,
     private val updateCourseUseCase: UpdateCourseUseCase
 ) : ViewModel() {
