@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cursosapp.ui.components.organisms.login.LoginContent
@@ -13,15 +14,13 @@ import com.example.cursosapp.ui.components.organisms.login.LoginHeader
 import com.kull18.edutrack.core.theme.ui.EduTrackTheme
 import com.kull18.edutrack.core.ui.components.MainScaffold
 import com.kull18.edutrack.features.auth.presentation.viewmodels.LoginViewModel
-import com.kull18.edutrack.features.auth.presentation.viewmodels.LoginViewModelFactory
 
 @Composable
 fun LoginScreen(
-    factory: LoginViewModelFactory,
     onNavigateToRegister: () -> Unit = {},
     onLoginSuccess: (String) -> Unit = {} // Recibe el rol del usuario
 ) {
-    val viewModel: LoginViewModel = viewModel(factory = factory)
+    val viewModel: LoginViewModel = hiltViewModel()
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val email by viewModel.email.collectAsStateWithLifecycle()

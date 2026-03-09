@@ -8,17 +8,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.app.ui.screens.CreateCourseScreen
-import com.kull18.edutrack.features.auth.presentation.viewmodels.LoginViewModelFactory
-import com.kull18.edutrack.features.auth.presentation.viewmodels.RegisterViewModelFactory
-import com.kull18.edutrack.features.course_create.presentation.viewmodels.CreateCourseViewModelFactory
 import com.kull18.edutrack.features.course_delete.presentation.screens.DeleteCourseScreen
-import com.kull18.edutrack.features.course_delete.presentation.screens.DeleteCourseViewModelFactory
 import com.kull18.edutrack.features.course_detail.presentation.screens.CourseDetailScreen
-import com.kull18.edutrack.features.course_detail.presentation.screens.CourseDetailViewModelFactory
 import com.kull18.edutrack.features.course_edit.presentation.screens.EditCourseScreen
-import com.kull18.edutrack.features.course_edit.presentation.screens.EditCourseViewModelFactory
 import com.kull18.edutrack.features.courses_list.presentation.screens.CoursesScreen
-import com.kull18.edutrack.features.courses_list.presentation.viewmodels.CourseListViewModelFactory
 import com.kull18.edutrack.features.login.presentation.screens.LoginScreen
 import com.kull18.edutrack.features.register.presentation.screens.RegisterScreen
 import java.net.URLDecoder
@@ -26,13 +19,6 @@ import java.net.URLDecoder
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    loginFactory: LoginViewModelFactory,
-    registerFactory: RegisterViewModelFactory,
-    courseListFactory: CourseListViewModelFactory,
-    createCourseFactory: CreateCourseViewModelFactory,
-    courseDetailFactory: CourseDetailViewModelFactory,
-    editCourseFactory: EditCourseViewModelFactory,
-    deleteFactory: DeleteCourseViewModelFactory
 ) {
     NavHost(
         navController = navController,
@@ -40,7 +26,6 @@ fun AppNavGraph(
     ) {
         composable(AppRoutes.Login.route) {
             LoginScreen(
-                factory = loginFactory,
                 onNavigateToRegister = {
                     navController.navigate(AppRoutes.Register.route)
                 },
@@ -63,7 +48,6 @@ fun AppNavGraph(
 
         composable(AppRoutes.Register.route) {
             RegisterScreen(
-                factory = registerFactory,
                 onNavigateToLogin = {
                     navController.popBackStack()
                 },
@@ -77,7 +61,6 @@ fun AppNavGraph(
 
         composable(AppRoutes.InstructorCourses.route) {
             CoursesScreen(
-                factory = courseListFactory,
                 onEditClick = { courseId ->
                     navController.navigate(AppRoutes.EditCourse.createRoute(courseId))
                 },
@@ -110,7 +93,6 @@ fun AppNavGraph(
             DeleteCourseScreen(
                 courseId = courseId,
                 courseName = courseName,
-                factory = deleteFactory,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -125,7 +107,6 @@ fun AppNavGraph(
 
         composable(AppRoutes.CreateCourse.route) {
             CreateCourseScreen(
-                factory = createCourseFactory,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -151,7 +132,6 @@ fun AppNavGraph(
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
             CourseDetailScreen(
                 courseId = courseId,
-                viewModelFactory = courseDetailFactory,
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -169,7 +149,6 @@ fun AppNavGraph(
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
             EditCourseScreen(
                 courseId = courseId,
-                factory = editCourseFactory,
                 onBackClick = {
                     navController.popBackStack()
                 },

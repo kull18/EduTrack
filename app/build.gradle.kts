@@ -2,13 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.secrets.gradle)
+    alias(libs.plugins.hilt)        // ← agregar
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.android)         // ← agregar
 }
-
 android {
     namespace = "com.kull18.edutrack"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk= 36
 
     defaultConfig {
         applicationId = "com.kull18.edutrack"
@@ -39,6 +39,9 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true  // ← AGREGAR ESTA LÍNEA
+    }
+    kotlinOptions {
+        jvmTarget = "11"
     }
 
     //noinspection WrongGradleMethod
@@ -75,4 +78,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

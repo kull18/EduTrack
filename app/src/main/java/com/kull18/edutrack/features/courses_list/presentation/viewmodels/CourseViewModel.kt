@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.courses_list.domain.usecases.GetAllCoursesUseCase
 import com.kull18.edutrack.features.courses_list.presentation.screens.CourseUIState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CourseListViewModel(
+@HiltViewModel
+class CourseListViewModel @Inject constructor(
     private val getAllCoursesUseCase: GetAllCoursesUseCase
 ) : ViewModel() {
 

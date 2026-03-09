@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kull18.edutrack.core.ui.components.MainScaffold
@@ -25,11 +26,10 @@ import com.kull18.edutrack.features.courses_list.presentation.components.organim
 fun DeleteCourseScreen(
     courseId: Int,
     courseName: String,
-    factory: DeleteCourseViewModelFactory,
     onBackClick: () -> Unit,
     onDeleteSuccess: () -> Unit
 ) {
-    val viewModel: DeleteCourseViewModel = viewModel(factory = factory)
+    val viewModel: DeleteCourseViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

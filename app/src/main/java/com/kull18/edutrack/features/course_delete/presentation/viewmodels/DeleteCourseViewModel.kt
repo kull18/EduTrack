@@ -4,12 +4,15 @@ package com.kull18.edutrack.features.course_delete.presentation.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.course_delete.domain.usecases.DeleteCourseUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DeleteCourseViewModel(
+@HiltViewModel
+class DeleteCourseViewModel @Inject constructor(
     private val deleteCourseUseCase: DeleteCourseUseCase
 ) : ViewModel() {
 

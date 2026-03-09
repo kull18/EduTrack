@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kull18.edutrack.core.ui.components.MainScaffold
@@ -28,11 +29,10 @@ import com.kull18.edutrack.features.courses_list.presentation.components.organim
 @Composable
 fun CourseDetailScreen(
     courseId: Int,
-    viewModelFactory: CourseDetailViewModelFactory,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: CourseDetailViewModel = viewModel(factory = viewModelFactory)
+    val viewModel: CourseDetailViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

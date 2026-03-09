@@ -5,21 +5,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.registro.ui.organisms.RegistrationForm
 import com.kull18.edutrack.core.ui.components.MainScaffold
 import com.kull18.edutrack.features.auth.presentation.viewmodels.RegisterViewModel
-import com.kull18.edutrack.features.auth.presentation.viewmodels.RegisterViewModelFactory
 import com.kull18.edutrack.features.register.presentation.components.molecules.TopBar
 
 @Composable
 fun RegisterScreen(
-    factory: RegisterViewModelFactory,
     onNavigateToLogin: () -> Unit = {},
     onRegisterSuccess: () -> Unit = {}
 ) {
-    val viewModel: RegisterViewModel = viewModel(factory = factory)
+    val viewModel: RegisterViewModel = hiltViewModel()
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val nombre by viewModel.nombre.collectAsStateWithLifecycle()
