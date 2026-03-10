@@ -79,6 +79,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.hilt.android)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)  // ← ksp en lugar de kapt
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 }
