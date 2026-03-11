@@ -1,6 +1,8 @@
 package com.kull18.edutrack.features.lesson.presentation.screens
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,11 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kull18.edutrack.core.hardware.data.AndroidGaleriaManager
 import com.kull18.edutrack.features.lesson.presentation.viewmodels.CreateLessonViewModel
+import kotlinx.coroutines.launch
 import java.io.File
 
 private val PrimaryBlue = Color(0xFF3D5AFE)
@@ -57,20 +61,33 @@ fun CreateLessonScreen(
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // ─── Obtener AndroidGaleriaManager para registrar launcher ──
+    // ─── GaleriaManager ───────────────────────────────────
     val androidGaleriaManager = remember {
         viewModel.getGaleriaManager() as? AndroidGaleriaManager
     }
 
-    // ─── Launcher galería — se registra en AndroidGaleriaManager ──
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         androidGaleriaManager?.onImagePicked(uri)
     }
 
-    // ─── Registrar launcher y cursoId al entrar ──────────────
+    // ─── Permiso cámara ───────────────────────────────────
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.tomarFoto(context)
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar("Permiso de cámara denegado")
+            }
+        }
+    }
+
+    // ─── Registrar launcher y cursoId al entrar ───────────
     LaunchedEffect(Unit) {
         androidGaleriaManager?.launcher = galleryLauncher
         viewModel.setCursoId(cursoId)
@@ -95,12 +112,7 @@ fun CreateLessonScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Crear Lección",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
+                    Text("Crear Lección", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -113,18 +125,15 @@ fun CreateLessonScreen(
         bottomBar = {
             Surface(color = Color.White, shadowElevation = 8.dp) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = onBackClick,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Cancelar", color = TextPrimary)
-                    }
+                    ) { Text("Cancelar", color = TextPrimary) }
+
                     Button(
                         onClick = { viewModel.createLeccion() },
                         modifier = Modifier.weight(1f),
@@ -133,11 +142,7 @@ fun CreateLessonScreen(
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
                             Text("Guardar Lección", color = Color.White)
                         }
@@ -155,7 +160,6 @@ fun CreateLessonScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ─── Título ───────────────────────────────────
             FieldLabel("T  Título de la Lección *")
             OutlinedTextField(
                 value = titulo,
@@ -167,21 +171,17 @@ fun CreateLessonScreen(
                 colors = fieldColors()
             )
 
-            // ─── Contenido ────────────────────────────────
             FieldLabel("≡  Contenido *")
             OutlinedTextField(
                 value = contenido,
                 onValueChange = viewModel::onContenidoChange,
                 placeholder = { Text("Escribe los conceptos principales...", color = TextSecondary) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(130.dp),
+                modifier = Modifier.fillMaxWidth().height(130.dp),
                 shape = RoundedCornerShape(12.dp),
                 maxLines = 6,
                 colors = fieldColors()
             )
 
-            // ─── Orden y Duración ─────────────────────────
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(modifier = Modifier.weight(1f)) {
                     FieldLabel("#  Orden")
@@ -209,9 +209,7 @@ fun CreateLessonScreen(
                 }
             }
 
-            // ─── Material Visual ──────────────────────────
             FieldLabel("🖼  Material Visual")
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -230,66 +228,47 @@ fun CreateLessonScreen(
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Image,
-                            contentDescription = null,
-                            tint = TextSecondary,
-                            modifier = Modifier.size(40.dp)
-                        )
+                        Icon(Icons.Default.Image, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(40.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "No hay imagen seleccionada",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = TextPrimary
-                        )
-                        Text(
-                            "Añade una portada para esta lección",
-                            fontSize = 12.sp,
-                            color = TextSecondary
-                        )
+                        Text("No hay imagen seleccionada", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
+                        Text("Añade una portada para esta lección", fontSize = 12.sp, color = TextSecondary)
                     }
                 }
             }
 
-            // ─── Botones cámara / galería ─────────────────
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-
-                // Cámara — AndroidCamaraManager via ViewModel
+                // Cámara — solicita permiso en runtime
                 OutlinedButton(
-                    onClick = { viewModel.tomarFoto(context) },
+                    onClick = {
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                            == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            viewModel.tomarFoto(context)
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                ) {
-                    Text("📷  Tomar Foto", color = TextPrimary)
-                }
+                ) { Text("📷  Tomar Foto", color = TextPrimary) }
 
-                // Galería — ViewModel llama pickImage() → AndroidGaleriaManager
-                // usa el launcher registrado → callback onImagePicked → ViewModel
+                // Galería — sin permiso requerido en Android 13+
                 OutlinedButton(
                     onClick = { viewModel.abrirGaleria(context) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                ) {
-                    Text("🖼  Galería", color = TextPrimary)
-                }
+                ) { Text("🖼  Galería", color = TextPrimary) }
             }
 
-            // ─── Tip informativo ──────────────────────────
             Surface(shape = RoundedCornerShape(12.dp), color = LightBlue) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
+                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
                     Text("✅", fontSize = 16.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Las lecciones con imágenes tienen un 25% más de compromiso por parte de los alumnos.",
-                        fontSize = 12.sp,
-                        color = PrimaryBlue,
-                        lineHeight = 18.sp
+                        fontSize = 12.sp, color = PrimaryBlue, lineHeight = 18.sp
                     )
                 }
             }
@@ -299,12 +278,7 @@ fun CreateLessonScreen(
 
 @Composable
 private fun FieldLabel(text: String) {
-    Text(
-        text = text,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = PrimaryBlue
-    )
+    Text(text = text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = PrimaryBlue)
 }
 
 @Composable
@@ -315,7 +289,13 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
     focusedContainerColor = Color.White
 )
 
-// ─── Helper Bitmap → File ──────────────────────────────────
+fun uriToFile(context: Context, uri: Uri): File {
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val file = File(context.cacheDir, "galeria_${System.currentTimeMillis()}.jpg")
+    file.outputStream().use { inputStream?.copyTo(it) }
+    return file
+}
+
 fun bitmapToFile(context: Context, bitmap: android.graphics.Bitmap): File {
     val file = File(context.cacheDir, "camara_${System.currentTimeMillis()}.jpg")
     file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it) }

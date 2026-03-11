@@ -69,7 +69,7 @@ class LeccionRepositoryImpl @Inject constructor(
         return api.updateLeccion(getToken(), cursoId, leccionId, request).toDomain()
     }
 
-    override suspend fun deleteLeccion(cursoId: Int, leccionId: Int): Leccion {
-        return api.deleteLeccion(getToken(), cursoId, leccionId).toDomain()
+    override suspend fun deleteLeccion(cursoId: Int, leccionId: Int) {
+        api.deleteLeccion(getToken(), cursoId, leccionId)
     }
 }

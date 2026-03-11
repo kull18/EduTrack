@@ -1,4 +1,3 @@
-// presentation/components/organisms/CourseCard.kt
 package com.kull18.edutrack.features.courses_list.presentation.components.organisms
 
 import androidx.compose.foundation.background
@@ -22,6 +21,7 @@ fun CourseCard(
     onEditClick: () -> Unit,
     onViewClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onLessonsClick: () -> Unit,          // ← nuevo
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -41,7 +41,8 @@ fun CourseCard(
         CourseActions(
             onEditClick = onEditClick,
             onViewClick = onViewClick,
-            onDeleteClick = onDeleteClick
+            onDeleteClick = onDeleteClick,
+            onLessonsClick = onLessonsClick   // ← nuevo
         )
     }
 }
