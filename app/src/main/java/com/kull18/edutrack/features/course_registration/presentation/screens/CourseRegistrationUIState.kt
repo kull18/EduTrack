@@ -1,10 +1,12 @@
 package com.kull18.edutrack.features.course_registration.presentation.screens
 
+import com.kull18.edutrack.features.course_registration.domain.entities.Inscripcion
 import com.kull18.edutrack.features.course_registration.domain.entities.RegistrationCourse
 
 data class CourseRegistrationUIState(
     val isLoading: Boolean = false,
     val courses: List<RegistrationCourse> = emptyList(),
+    val inscripciones: List<Inscripcion> = emptyList(),
     val query: String = "",
     val selectedCategory: String = "Todos",
     val enrolledCourseIds: Set<Int> = emptySet(),

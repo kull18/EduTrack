@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.course_registration.domain.usecases.EnrollInCourseUseCase
 import com.kull18.edutrack.features.course_registration.domain.usecases.GetAvailableCoursesUseCase
+import com.kull18.edutrack.features.course_registration.domain.usecases.GetMisInscripcionesUseCase
 import com.kull18.edutrack.features.course_registration.presentation.screens.CourseRegistrationUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CourseRegistrationViewModel @Inject constructor(
     private val getAvailableCoursesUseCase: GetAvailableCoursesUseCase,
-    private val enrollInCourseUseCase: EnrollInCourseUseCase
+    private val enrollInCourseUseCase: EnrollInCourseUseCase,
+    private val getMisInscripcionesUseCase: GetMisInscripcionesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CourseRegistrationUIState())
@@ -24,31 +26,39 @@ class CourseRegistrationViewModel @Inject constructor(
     val categories = listOf("Todos", "Diseno", "Software", "Marketing")
 
     init {
-        loadCourses()
+        loadData()
     }
 
-    fun loadCourses() {
+    private fun loadData() {
         _uiState.update { it.copy(isLoading = true, error = null) }
 
         viewModelScope.launch {
-            val result = getAvailableCoursesUseCase()
+            // Cargar cursos disponibles
+            val coursesResult = getAvailableCoursesUseCase()
+            // Cargar mis inscripciones para saber cuáles ya están inscritos
+            val inscripcionesResult = getMisInscripcionesUseCase()
+
             _uiState.update { current ->
-                result.fold(
-                    onSuccess = { courses ->
-                        current.copy(
-                            isLoading = false,
-                            courses = courses
-                        )
-                    },
-                    onFailure = { throwable ->
-                        current.copy(
-                            isLoading = false,
-                            error = throwable.message ?: "No se pudieron cargar los cursos"
-                        )
-                    }
+                val courses = coursesResult.getOrDefault(emptyList())
+                val inscripciones = inscripcionesResult.getOrDefault(emptyList())
+                val enrolledIds = inscripciones.map { it.cursoId }.toSet()
+
+                val error = coursesResult.exceptionOrNull()?.message
+                    ?: inscripcionesResult.exceptionOrNull()?.message
+
+                current.copy(
+                    isLoading = false,
+                    courses = courses,
+                    inscripciones = inscripciones,
+                    enrolledCourseIds = enrolledIds,
+                    error = error
                 )
             }
         }
+    }
+
+    fun loadCourses() {
+        loadData()
     }
 
     fun onQueryChange(query: String) {
