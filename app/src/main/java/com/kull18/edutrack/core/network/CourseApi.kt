@@ -13,20 +13,9 @@ import com.kull18.edutrack.features.login.data.datasources.models.LoginResponse
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterRequest
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterResponse
 
-// --- Modelos nuevos F02: Lecciones ---
-import com.kull18.edutrack.features.lesson_create.data.datasources.models.CreateLeccionRequest
-import com.kull18.edutrack.features.lesson_create.data.datasources.models.LeccionResponse
-import com.kull18.edutrack.features.lesson_edit.data.datasources.models.UpdateLeccionRequest
-import com.kull18.edutrack.features.lesson_list.data.datasources.models.LeccionDTO
-
-// --- Modelos nuevos F03: Inscripciones ---
-import com.kull18.edutrack.features.enrollment.data.datasources.models.InscripcionRequest
-import com.kull18.edutrack.features.enrollment.data.datasources.models.InscripcionResponse
-import com.kull18.edutrack.features.enrollment.data.datasources.models.ProgresoRequest
-import com.kull18.edutrack.features.enrollment.data.datasources.models.ProgresoResponse
-import com.kull18.edutrack.features.enrollment.data.datasources.models.InscripcionDetalleDTO
 import com.kull18.edutrack.features.lesson.data.datasources.models.LeccionDTO
 import com.kull18.edutrack.features.lesson.data.datasources.models.LeccionResponse
+import com.kull18.edutrack.features.lesson.data.datasources.models.MessageResponse
 import com.kull18.edutrack.features.lesson.data.datasources.models.UpdateLeccionRequest
 
 import okhttp3.MultipartBody
@@ -136,43 +125,9 @@ interface CourseApi {
         @Header("Authorization") token: String,
         @Path("cursoId") cursoId: Int,
         @Path("leccionId") leccionId: Int
-    ): LeccionResponse
+    ): MessageResponse  // ← nuevo tipo simple
 
     // ─────────────────────────────────────────
     // INSCRIPCIONES (F03 — nuevo)
     // ─────────────────────────────────────────
-
-    // Inscribirse a un curso
-    @POST("api/inscripciones")
-    suspend fun inscribirse(
-        @Header("Authorization") token: String,
-        @Body request: InscripcionRequest       // { "curso_id": 1 }
-    ): InscripcionResponse
-
-    // Mis inscripciones (alumno)
-    @GET("api/inscripciones/mis-inscripciones")
-    suspend fun getMisInscripciones(
-        @Header("Authorization") token: String
-    ): List<InscripcionDetalleDTO>
-
-    // Detalle de una inscripción
-    @GET("api/inscripciones/{id}")
-    suspend fun getInscripcionById(
-        @Header("Authorization") token: String,
-        @Path("id") inscripcionId: Int
-    ): InscripcionDetalleDTO
-
-    // Marcar/desmarcar lección como completada
-    @POST("api/inscripciones/{id}/progreso")
-    suspend fun updateProgreso(
-        @Header("Authorization") token: String,
-        @Path("id") inscripcionId: Int,
-        @Body request: ProgresoRequest          // { "leccion_id": 1, "completada": true }
-    ): ProgresoResponse
-
-    // Obtener progreso de una inscripción
-    @GET("api/inscripciones/{id}/progreso")
-    suspend fun getProgreso(
-        @Header("Authorization") token: String,
-        @Path("id") inscripcionId: Int
-    ): ProgresoResponse
+}

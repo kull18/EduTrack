@@ -1,5 +1,7 @@
 package com.kull18.edutrack.features.lesson.presentation.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,12 +31,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kull18.edutrack.core.hardware.data.AndroidGaleriaManager
 import com.kull18.edutrack.features.lesson.domain.entities.Leccion
 import com.kull18.edutrack.features.lesson.presentation.viewmodels.EditLessonViewModel
+import kotlinx.coroutines.launch
 
 private val PrimaryBlue = Color(0xFF3D5AFE)
 private val BackgroundGray = Color(0xFFF8F9FA)
@@ -65,20 +69,39 @@ fun EditLessonScreen(
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // ─── Obtener AndroidGaleriaManager para registrar launcher ──
+    // ─── GaleriaManager ───────────────────────────────────
     val androidGaleriaManager = remember {
         viewModel.getGaleriaManager() as? AndroidGaleriaManager
     }
 
-    // ─── Launcher galería — se registra en AndroidGaleriaManager ──
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         androidGaleriaManager?.onImagePicked(uri)
     }
 
-    // ─── Registrar launcher y prellenar formulario al entrar ──
+    // ─── Permiso cámara ───────────────────────────────────
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.tomarFoto(context)
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar("Permiso de cámara denegado")
+            }
+        }
+    }
+
+    LaunchedEffect(leccion) {
+        androidGaleriaManager?.launcher = galleryLauncher
+        viewModel.prepareEdit(cursoId, leccion)
+        android.util.Log.d("EditLesson", "imagenUrl = ${leccion.imagenUrl}")  // ← agregar
+    }
+
+    // ─── Registrar launcher y prellenar al entrar ─────────
     LaunchedEffect(leccion) {
         androidGaleriaManager?.launcher = galleryLauncher
         viewModel.prepareEdit(cursoId, leccion)
@@ -102,14 +125,7 @@ fun EditLessonScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Editar Lección",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                },
+                title = { Text("Editar Lección", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextPrimary)
@@ -141,11 +157,7 @@ fun EditLessonScreen(
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
                             Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                             Spacer(modifier = Modifier.width(4.dp))
@@ -165,7 +177,6 @@ fun EditLessonScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ─── Detalles básicos ─────────────────────────
             EditSectionCard(title = "T  DETALLES BÁSICOS") {
                 Text("Título de la Lección", fontSize = 12.sp, color = TextSecondary)
                 Spacer(modifier = Modifier.height(6.dp))
@@ -208,40 +219,30 @@ fun EditLessonScreen(
                 }
             }
 
-            // ─── Contenido ────────────────────────────────
             EditSectionCard(title = "≡  CONTENIDO DEL CURSO") {
                 OutlinedTextField(
                     value = contenido,
                     onValueChange = viewModel::onContenidoChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(130.dp),
+                    modifier = Modifier.fillMaxWidth().height(130.dp),
                     shape = RoundedCornerShape(12.dp),
                     maxLines = 6,
                     colors = editFieldColors()
                 )
             }
 
-            // ─── Imagen de portada ────────────────────────
             EditSectionCard(
                 title = "🖼  IMAGEN DE PORTADA",
                 action = {
                     if (imagenUri != null || leccion.imagenUrl != null) {
                         TextButton(onClick = { viewModel.onImagenEliminada() }) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = null,
-                                tint = RedDelete,
-                                modifier = Modifier.size(14.dp)
-                            )
+                            Icon(Icons.Default.Close, contentDescription = null, tint = RedDelete, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Eliminar imagen", fontSize = 12.sp, color = RedDelete)
                         }
                     }
                 }
             ) {
-                // Preview — nueva imagen o la existente del servidor
-                val imageSource = imagenUri ?: leccion.imagenUrl?.let { Uri.parse(it) }
+                val imageSource: Any? = imagenUri ?: leccion.imagenUrl  // ← String directo, no Uri.parse()
                 if (imageSource != null) {
                     AsyncImage(
                         model = imageSource,
@@ -255,47 +256,44 @@ fun EditLessonScreen(
                 } else {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
+                            .fillMaxWidth().height(100.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(BackgroundGray)
                             .border(1.dp, BorderColor, RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
-                    ) {
-                        Text("Sin imagen", color = TextSecondary, fontSize = 13.sp)
-                    }
+                    ) { Text("Sin imagen", color = TextSecondary, fontSize = 13.sp) }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
-
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // Cámara — AndroidCamaraManager via ViewModel
+                    // Cámara — solicita permiso en runtime
                     OutlinedButton(
-                        onClick = { viewModel.tomarFoto(context) },
+                        onClick = {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                viewModel.tomarFoto(context)
+                            } else {
+                                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                    ) {
-                        Text("📷  Tomar Foto", fontSize = 13.sp, color = TextPrimary)
-                    }
+                    ) { Text("📷  Tomar Foto", fontSize = 13.sp, color = TextPrimary) }
 
-                    // Galería — ViewModel llama pickImage() → AndroidGaleriaManager
-                    // usa el launcher registrado → callback onImagePicked → ViewModel
+                    // Galería
                     OutlinedButton(
                         onClick = { viewModel.abrirGaleria(context) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
-                    ) {
-                        Text("🖼  De Galería", fontSize = 13.sp, color = TextPrimary)
-                    }
+                    ) { Text("🖼  De Galería", fontSize = 13.sp, color = TextPrimary) }
                 }
             }
         }
     }
 }
-
-// ─── Composables auxiliares ────────────────────────────────
 
 @Composable
 private fun EditSectionCard(
@@ -343,20 +341,13 @@ fun DeleteLessonDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(RedLight, CircleShape),
+                    modifier = Modifier.size(56.dp).background(RedLight, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("!", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = RedDelete)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    "¿Eliminar Lección?",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
+                Text("¿Eliminar Lección?", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(12.dp))
                 Surface(shape = RoundedCornerShape(8.dp), color = BackgroundGray) {
                     Text(
@@ -365,18 +356,13 @@ fun DeleteLessonDialog(
                         fontWeight = FontWeight.Medium,
                         color = TextPrimary,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Esta acción es irreversible y se perderán todos los datos asociados.",
-                    fontSize = 13.sp,
-                    color = TextSecondary,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp
+                    fontSize = 13.sp, color = TextSecondary, textAlign = TextAlign.Center, lineHeight = 18.sp
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
@@ -385,12 +371,7 @@ fun DeleteLessonDialog(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = RedDelete)
                 ) {
-                    Text(
-                        "🗑  Eliminar Lección",
-                        color = Color.White,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("🗑  Eliminar Lección", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {

@@ -23,5 +23,5 @@ interface LeccionRepository {
         request: UpdateLeccionRequest
     ): Leccion
 
-    suspend fun deleteLeccion(cursoId: Int, leccionId: Int): Leccion
+    suspend fun deleteLeccion(cursoId: Int, leccionId: Int)
 }

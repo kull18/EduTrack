@@ -1,4 +1,3 @@
-// presentation/screens/CoursesScreen.kt
 package com.kull18.edutrack.features.courses_list.presentation.screens
 
 import androidx.compose.foundation.background
@@ -27,18 +26,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kull18.edutrack.features.courses_list.presentation.components.organims.CoursesTopBar
 import com.kull18.edutrack.features.courses_list.presentation.components.organisms.CourseCard
 import com.kull18.edutrack.features.courses_list.presentation.viewmodels.CourseListViewModel
-
 
 @Composable
 fun CoursesScreen(
     onEditClick: (Int) -> Unit = {},
     onViewClick: (Int) -> Unit = {},
-    onDeleteClick: (Int, String) -> Unit = { _, _ -> },  // Cambiar firma
+    onDeleteClick: (Int, String) -> Unit = { _, _ -> },
     onCreateCourseClick: () -> Unit = {},
+    onLessonsClick: (courseId: Int, courseName: String) -> Unit = { _, _ -> }, // ← nuevo
     modifier: Modifier = Modifier
 ) {
     val viewModel: CourseListViewModel = hiltViewModel()
@@ -104,7 +102,8 @@ fun CoursesScreen(
                                 isActive = course.activo,
                                 onEditClick = { onEditClick(course.id) },
                                 onViewClick = { onViewClick(course.id) },
-                                onDeleteClick = { onDeleteClick(course.id, course.nombre) }
+                                onDeleteClick = { onDeleteClick(course.id, course.nombre) },
+                                onLessonsClick = { onLessonsClick(course.id, course.nombre) } // ← nuevo
                             )
                         }
                     }
@@ -115,9 +114,7 @@ fun CoursesScreen(
 }
 
 @Composable
-fun EmptyCoursesView(
-    modifier: Modifier = Modifier
-) {
+fun EmptyCoursesView(modifier: Modifier = Modifier) {
     Text(
         text = "No hay cursos disponibles",
         modifier = modifier,
