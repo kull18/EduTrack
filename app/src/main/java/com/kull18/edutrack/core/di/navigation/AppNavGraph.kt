@@ -1,6 +1,5 @@
 package com.kull18.edutrack.presentation.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -12,6 +11,7 @@ import com.google.gson.Gson
 import com.kull18.edutrack.features.course_delete.presentation.screens.DeleteCourseScreen
 import com.kull18.edutrack.features.course_detail.presentation.screens.CourseDetailScreen
 import com.kull18.edutrack.features.course_edit.presentation.screens.EditCourseScreen
+import com.kull18.edutrack.features.course_registration.presentation.screens.CourseRegistrationScreen
 import com.kull18.edutrack.features.courses_list.presentation.screens.CoursesScreen
 import com.kull18.edutrack.features.lesson.domain.entities.Leccion
 import com.kull18.edutrack.features.lesson.presentation.screens.CreateLessonScreen
@@ -216,8 +216,7 @@ fun AppNavGraph(
 
         // ─── ALUMNO ────────────────────────────────────────
         composable(AppRoutes.StudentDashboard.route) {
-            // TODO: F03 — CourseCatalogScreen
-            Text("Dashboard de Alumno — Próximamente")
+            CourseRegistrationScreen()
         }
     }
 }

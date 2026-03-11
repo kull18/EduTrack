@@ -130,4 +130,10 @@ interface CourseApi {
     // ─────────────────────────────────────────
     // INSCRIPCIONES (F03 — nuevo)
     // ─────────────────────────────────────────
+
+    @POST("api/cursos/{id}/inscribirse")
+    suspend fun enrollInCourse(
+        @Header("Authorization") token: String,
+        @Path("id") courseId: Int
+    ): MessageResponse
 }
