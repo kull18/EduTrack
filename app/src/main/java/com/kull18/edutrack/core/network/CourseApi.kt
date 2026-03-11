@@ -13,6 +13,11 @@ import com.kull18.edutrack.features.login.data.datasources.models.LoginResponse
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterRequest
 import com.kull18.edutrack.features.register.data.datasources.models.RegisterResponse
 
+import com.kull18.edutrack.features.course_registration.data.datasources.models.InscripcionDetalleDTO
+import com.kull18.edutrack.features.course_registration.data.datasources.models.InscripcionRequest
+import com.kull18.edutrack.features.course_registration.data.datasources.models.InscripcionResponse
+import com.kull18.edutrack.features.course_registration.data.datasources.models.ProgresoRequest
+import com.kull18.edutrack.features.course_registration.data.datasources.models.ProgresoResponse
 import com.kull18.edutrack.features.lesson.data.datasources.models.LeccionDTO
 import com.kull18.edutrack.features.lesson.data.datasources.models.LeccionResponse
 import com.kull18.edutrack.features.lesson.data.datasources.models.MessageResponse
@@ -130,4 +135,39 @@ interface CourseApi {
     // ─────────────────────────────────────────
     // INSCRIPCIONES (F03 — nuevo)
     // ─────────────────────────────────────────
+
+    // Inscribirse a un curso
+    @POST("api/inscripciones")
+    suspend fun inscribirse(
+        @Header("Authorization") token: String,
+        @Body request: InscripcionRequest
+    ): InscripcionResponse
+
+    // Mis inscripciones (alumno)
+    @GET("api/inscripciones/mis-inscripciones")
+    suspend fun getMisInscripciones(
+        @Header("Authorization") token: String
+    ): List<InscripcionDetalleDTO>
+
+    // Detalle de una inscripción
+    @GET("api/inscripciones/{id}")
+    suspend fun getInscripcionById(
+        @Header("Authorization") token: String,
+        @Path("id") inscripcionId: Int
+    ): InscripcionDetalleDTO
+
+    // Marcar/desmarcar lección como completada
+    @POST("api/inscripciones/{id}/progreso")
+    suspend fun updateProgreso(
+        @Header("Authorization") token: String,
+        @Path("id") inscripcionId: Int,
+        @Body request: ProgresoRequest
+    ): ProgresoResponse
+
+    // Obtener progreso de una inscripción
+    @GET("api/inscripciones/{id}/progreso")
+    suspend fun getProgreso(
+        @Header("Authorization") token: String,
+        @Path("id") inscripcionId: Int
+    ): ProgresoResponse
 }
