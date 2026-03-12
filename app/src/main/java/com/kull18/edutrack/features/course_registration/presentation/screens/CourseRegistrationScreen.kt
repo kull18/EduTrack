@@ -50,18 +50,19 @@ import com.kull18.edutrack.features.course_registration.presentation.viewmodels.
 @Composable
 fun CourseRegistrationScreen(
     modifier: Modifier = Modifier,
-    onCourseClick: (courseId: Int, courseName: String) -> Unit = { _, _ -> }
+    onCourseClick: (courseId: Int, courseName: String) -> Unit = { _, _ -> },
+    onEnrollSuccess: (courseId: Int, courseName: String, instructorName: String) -> Unit = { _, _, _ -> }
 ) {
     val viewModel: CourseRegistrationViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Navigate to lessons after successful enrollment
+    // Navigate to confirmation screen after successful enrollment
     LaunchedEffect(uiState.lastEnrolledCourseId) {
         uiState.lastEnrolledCourseId?.let { courseId ->
             val course = uiState.courses.find { it.id == courseId }
             if (course != null) {
-                onCourseClick(courseId, course.nombre)
+                onEnrollSuccess(courseId, course.nombre, course.instructorNombre)
             }
             viewModel.clearLastEnrolled()
         }

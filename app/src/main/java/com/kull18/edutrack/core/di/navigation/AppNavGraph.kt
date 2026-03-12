@@ -12,6 +12,7 @@ import com.kull18.edutrack.features.course_delete.presentation.screens.DeleteCou
 import com.kull18.edutrack.features.course_detail.presentation.screens.CourseDetailScreen
 import com.kull18.edutrack.features.course_edit.presentation.screens.EditCourseScreen
 import com.kull18.edutrack.features.course_registration.presentation.screens.CourseRegistrationScreen
+import com.kull18.edutrack.features.course_registration.presentation.screens.EnrollmentConfirmationScreen
 import com.kull18.edutrack.features.course_registration.presentation.screens.StudentLessonListScreen
 import com.kull18.edutrack.features.courses_list.presentation.screens.CoursesScreen
 import com.kull18.edutrack.features.lesson.domain.entities.Leccion
@@ -220,6 +221,47 @@ fun AppNavGraph(
             CourseRegistrationScreen(
                 onCourseClick = { courseId, courseName ->
                     navController.navigate(AppRoutes.StudentLessonList.createRoute(courseId, courseName))
+                },
+                onEnrollSuccess = { courseId, courseName, instructorName ->
+                    navController.navigate(
+                        AppRoutes.EnrollmentConfirmation.createRoute(courseId, courseName, instructorName)
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = AppRoutes.EnrollmentConfirmation.route,
+            arguments = listOf(
+                navArgument("courseId") { type = NavType.IntType },
+                navArgument("courseName") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("instructorName") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
+            val courseName = URLDecoder.decode(
+                backStackEntry.arguments?.getString("courseName") ?: "", "UTF-8"
+            )
+            val instructorName = URLDecoder.decode(
+                backStackEntry.arguments?.getString("instructorName") ?: "", "UTF-8"
+            )
+            EnrollmentConfirmationScreen(
+                courseId = courseId,
+                courseName = courseName,
+                instructorName = instructorName,
+                onGoToCourse = {
+                    navController.navigate(AppRoutes.StudentLessonList.createRoute(courseId, courseName)) {
+                        popUpTo(AppRoutes.StudentDashboard.route) { inclusive = false }
+                    }
+                },
+                onBackToCatalog = {
+                    navController.popBackStack(AppRoutes.StudentDashboard.route, inclusive = false)
                 }
             )
         }
