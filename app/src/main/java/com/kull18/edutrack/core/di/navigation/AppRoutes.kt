@@ -47,7 +47,16 @@ sealed class AppRoutes(val route: String) {
         fun createRoute(courseId: Int) = "student/courses/detail/$courseId"
     }
 
-    object EnrollmentConfirmation : AppRoutes("student/courses/enrolled/{courseId}") {
-        fun createRoute(courseId: Int) = "student/courses/enrolled/$courseId"
+    object EnrollmentConfirmation : AppRoutes("student/courses/enrolled/{courseId}?courseName={courseName}&instructorName={instructorName}") {
+        fun createRoute(courseId: Int, courseName: String, instructorName: String): String {
+            val enc = java.net.URLEncoder.encode(courseName, "UTF-8")
+            val encInstructor = java.net.URLEncoder.encode(instructorName, "UTF-8")
+            return "student/courses/enrolled/$courseId?courseName=$enc&instructorName=$encInstructor"
+        }
+    }
+
+    object StudentLessonList : AppRoutes("student/courses/{courseId}/lessons?courseName={courseName}") {
+        fun createRoute(courseId: Int, courseName: String) =
+            "student/courses/$courseId/lessons?courseName=${java.net.URLEncoder.encode(courseName, "UTF-8")}"
     }
 }
