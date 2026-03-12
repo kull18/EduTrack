@@ -86,7 +86,8 @@ class CourseRegistrationViewModel @Inject constructor(
                         current.copy(
                             enrollingCourseIds = current.enrollingCourseIds - courseId,
                             enrolledCourseIds = current.enrolledCourseIds + courseId,
-                            successMessage = message
+                            successMessage = message,
+                            lastEnrolledCourseId = courseId
                         )
                     },
                     onFailure = { throwable ->
@@ -106,6 +107,10 @@ class CourseRegistrationViewModel @Inject constructor(
 
     fun clearSuccessMessage() {
         _uiState.update { it.copy(successMessage = null) }
+    }
+
+    fun clearLastEnrolled() {
+        _uiState.update { it.copy(lastEnrolledCourseId = null) }
     }
 }
 

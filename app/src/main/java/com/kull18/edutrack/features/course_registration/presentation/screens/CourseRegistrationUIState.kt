@@ -12,6 +12,7 @@ data class CourseRegistrationUIState(
     val enrolledCourseIds: Set<Int> = emptySet(),
     val enrollingCourseIds: Set<Int> = emptySet(),
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val lastEnrolledCourseId: Int? = null
 )
 

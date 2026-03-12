@@ -12,6 +12,7 @@ import com.kull18.edutrack.features.course_delete.presentation.screens.DeleteCou
 import com.kull18.edutrack.features.course_detail.presentation.screens.CourseDetailScreen
 import com.kull18.edutrack.features.course_edit.presentation.screens.EditCourseScreen
 import com.kull18.edutrack.features.course_registration.presentation.screens.CourseRegistrationScreen
+import com.kull18.edutrack.features.course_registration.presentation.screens.StudentLessonListScreen
 import com.kull18.edutrack.features.courses_list.presentation.screens.CoursesScreen
 import com.kull18.edutrack.features.lesson.domain.entities.Leccion
 import com.kull18.edutrack.features.lesson.presentation.screens.CreateLessonScreen
@@ -216,7 +217,31 @@ fun AppNavGraph(
 
         // ─── ALUMNO ────────────────────────────────────────
         composable(AppRoutes.StudentDashboard.route) {
-            CourseRegistrationScreen()
+            CourseRegistrationScreen(
+                onCourseClick = { courseId, courseName ->
+                    navController.navigate(AppRoutes.StudentLessonList.createRoute(courseId, courseName))
+                }
+            )
+        }
+
+        composable(
+            route = AppRoutes.StudentLessonList.route,
+            arguments = listOf(
+                navArgument("courseId") { type = NavType.IntType },
+                navArgument("courseName") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
+            val encodedName = backStackEntry.arguments?.getString("courseName") ?: ""
+            val courseName = URLDecoder.decode(encodedName, "UTF-8")
+            StudentLessonListScreen(
+                cursoId = courseId,
+                courseName = courseName,
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

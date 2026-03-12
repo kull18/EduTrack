@@ -49,11 +49,23 @@ import com.kull18.edutrack.features.course_registration.presentation.viewmodels.
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun CourseRegistrationScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCourseClick: (courseId: Int, courseName: String) -> Unit = { _, _ -> }
 ) {
     val viewModel: CourseRegistrationViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Navigate to lessons after successful enrollment
+    LaunchedEffect(uiState.lastEnrolledCourseId) {
+        uiState.lastEnrolledCourseId?.let { courseId ->
+            val course = uiState.courses.find { it.id == courseId }
+            if (course != null) {
+                onCourseClick(courseId, course.nombre)
+            }
+            viewModel.clearLastEnrolled()
+        }
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -171,7 +183,8 @@ fun CourseRegistrationScreen(
                                 course = course,
                                 isEnrolled = course.id in uiState.enrolledCourseIds,
                                 isEnrolling = course.id in uiState.enrollingCourseIds,
-                                onEnrollClick = { viewModel.enroll(course.id) }
+                                onEnrollClick = { viewModel.enroll(course.id) },
+                                onCardClick = { onCourseClick(course.id, course.nombre) }
                             )
                         }
                     }
@@ -181,14 +194,19 @@ fun CourseRegistrationScreen(
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun CourseRegistrationCard(
     course: RegistrationCourse,
     isEnrolled: Boolean,
     isEnrolling: Boolean,
-    onEnrollClick: () -> Unit
+    onEnrollClick: () -> Unit,
+    onCardClick: () -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        onClick = onCardClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(
                 modifier = Modifier
@@ -239,8 +257,8 @@ private fun CourseRegistrationCard(
             }
 
             if (isEnrolled) {
-                Button(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth()) {
-                    Text("INSCRITO")
+                Button(onClick = onCardClick, modifier = Modifier.fillMaxWidth()) {
+                    Text("Ver Lecciones")
                 }
             } else {
                 Button(
