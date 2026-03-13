@@ -43,12 +43,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.kull18.edutrack.features.course_registration.domain.entities.RegistrationCourse
 import com.kull18.edutrack.features.course_registration.presentation.viewmodels.CourseRegistrationViewModel
+import com.kull18.edutrack.presentation.navigation.EduTrackBottomBar
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun CourseRegistrationScreen(
+    navController: NavHostController,
     modifier: Modifier = Modifier,
     onCourseClick: (courseId: Int, courseName: String) -> Unit = { _, _ -> },
     onEnrollSuccess: (courseId: Int, courseName: String, instructorName: String) -> Unit = { _, _, _ -> }
@@ -57,7 +60,6 @@ fun CourseRegistrationScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Navigate to confirmation screen after successful enrollment
     LaunchedEffect(uiState.lastEnrolledCourseId) {
         uiState.lastEnrolledCourseId?.let { courseId ->
             val course = uiState.courses.find { it.id == courseId }
@@ -86,11 +88,11 @@ fun CourseRegistrationScreen(
         derivedStateOf {
             uiState.courses.filter { course ->
                 val matchesCategory = uiState.selectedCategory == "Todos" ||
-                    course.nombre.contains(uiState.selectedCategory, ignoreCase = true) ||
-                    course.descripcion.contains(uiState.selectedCategory, ignoreCase = true)
+                        course.nombre.contains(uiState.selectedCategory, ignoreCase = true) ||
+                        course.descripcion.contains(uiState.selectedCategory, ignoreCase = true)
                 val matchesQuery = uiState.query.isBlank() ||
-                    course.nombre.contains(uiState.query, ignoreCase = true) ||
-                    course.descripcion.contains(uiState.query, ignoreCase = true)
+                        course.nombre.contains(uiState.query, ignoreCase = true) ||
+                        course.descripcion.contains(uiState.query, ignoreCase = true)
                 matchesCategory && matchesQuery
             }
         }
@@ -111,6 +113,7 @@ fun CourseRegistrationScreen(
                 }
             )
         },
+        bottomBar = { EduTrackBottomBar(navController = navController) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         when {
@@ -248,7 +251,6 @@ private fun CourseRegistrationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f)
                 )
-
                 Text(
                     text = "${course.duracionHoras}h",
                     style = MaterialTheme.typography.labelMedium,
@@ -282,4 +284,3 @@ private fun CourseRegistrationCard(
         }
     }
 }
-

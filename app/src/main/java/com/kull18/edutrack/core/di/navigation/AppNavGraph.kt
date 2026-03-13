@@ -15,6 +15,8 @@ import com.kull18.edutrack.features.course_registration.presentation.screens.Cou
 import com.kull18.edutrack.features.course_registration.presentation.screens.EnrollmentConfirmationScreen
 import com.kull18.edutrack.features.course_registration.presentation.screens.StudentLessonListScreen
 import com.kull18.edutrack.features.courses_list.presentation.screens.CoursesScreen
+import com.kull18.edutrack.features.course_registration.presentation.screens.MyCoursesScreen
+import com.kull18.edutrack.features.course_registration.presentation.screens.MyCourseDetailScreen
 import com.kull18.edutrack.features.lesson.domain.entities.Leccion
 import com.kull18.edutrack.features.lesson.presentation.screens.CreateLessonScreen
 import com.kull18.edutrack.features.lesson.presentation.screens.EditLessonScreen
@@ -25,9 +27,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 
 @Composable
-fun AppNavGraph(
-    navController: NavHostController,
-) {
+fun AppNavGraph(navController: NavHostController) {
     val gson = Gson()
 
     NavHost(
@@ -149,15 +149,11 @@ fun AppNavGraph(
         }
 
         // ─── INSTRUCTOR: LECCIONES ─────────────────────────
-
         composable(
             route = AppRoutes.LessonList.route,
             arguments = listOf(
                 navArgument("courseId") { type = NavType.IntType },
-                navArgument("courseName") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
+                navArgument("courseName") { type = NavType.StringType; defaultValue = "" }
             )
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
@@ -171,7 +167,6 @@ fun AppNavGraph(
                     navController.navigate(AppRoutes.CreateLesson.createRoute(courseId))
                 },
                 onEditLesson = { leccion ->
-                    // Serializar Leccion a JSON → URLEncode → pasar como String en la ruta
                     val leccionJson = URLEncoder.encode(gson.toJson(leccion), "UTF-8")
                     navController.navigate(AppRoutes.EditLesson.createRoute(courseId, leccionJson))
                 }
@@ -180,17 +175,13 @@ fun AppNavGraph(
 
         composable(
             route = AppRoutes.CreateLesson.route,
-            arguments = listOf(
-                navArgument("courseId") { type = NavType.IntType }
-            )
+            arguments = listOf(navArgument("courseId") { type = NavType.IntType })
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
             CreateLessonScreen(
                 cursoId = courseId,
                 onBackClick = { navController.popBackStack() },
-                onSuccess = {
-                    navController.popBackStack() // Volver a LessonList
-                }
+                onSuccess = { navController.popBackStack() }
             )
         }
 
@@ -203,7 +194,6 @@ fun AppNavGraph(
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
             val encodedLeccion = backStackEntry.arguments?.getString("leccionJson") ?: ""
-            // URLDecode → deserializar JSON → objeto Leccion
             val leccion = gson.fromJson(
                 URLDecoder.decode(encodedLeccion, "UTF-8"),
                 Leccion::class.java
@@ -216,32 +206,50 @@ fun AppNavGraph(
             )
         }
 
-        // ─── ALUMNO ────────────────────────────────────────
+        // ─── ALUMNO: EXPLORAR — BottomBar tab 1 ───────────
+        // navController se pasa para que CourseRegistrationScreen
+        // pueda montar EduTrackBottomBar en su propio Scaffold
         composable(AppRoutes.StudentDashboard.route) {
             CourseRegistrationScreen(
+                navController = navController,
                 onCourseClick = { courseId, courseName ->
-                    navController.navigate(AppRoutes.StudentLessonList.createRoute(courseId, courseName))
+                    navController.navigate(
+                        AppRoutes.StudentLessonList.createRoute(courseId, courseName)
+                    )
                 },
                 onEnrollSuccess = { courseId, courseName, instructorName ->
                     navController.navigate(
-                        AppRoutes.EnrollmentConfirmation.createRoute(courseId, courseName, instructorName)
+                        AppRoutes.EnrollmentConfirmation.createRoute(
+                            courseId, courseName, instructorName
+                        )
                     )
                 }
             )
         }
 
+        // ─── ALUMNO: MIS CURSOS — BottomBar tab 2 ─────────
+        composable(AppRoutes.MyCourses.route) {
+            MyCoursesScreen(
+                navController = navController,
+                onCourseClick = { course ->
+                    navController.navigate(AppRoutes.MyCourseDetail.createRoute(course.id))
+                },
+                onExploreCatalogClick = {
+                    navController.navigate(AppRoutes.StudentDashboard.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }
+
+        // ─── ALUMNO: CONFIRMACIÓN INSCRIPCIÓN ──────────────
         composable(
             route = AppRoutes.EnrollmentConfirmation.route,
             arguments = listOf(
                 navArgument("courseId") { type = NavType.IntType },
-                navArgument("courseName") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                },
-                navArgument("instructorName") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
+                navArgument("courseName") { type = NavType.StringType; defaultValue = "" },
+                navArgument("instructorName") { type = NavType.StringType; defaultValue = "" }
             )
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
@@ -256,7 +264,9 @@ fun AppNavGraph(
                 courseName = courseName,
                 instructorName = instructorName,
                 onGoToCourse = {
-                    navController.navigate(AppRoutes.StudentLessonList.createRoute(courseId, courseName)) {
+                    navController.navigate(
+                        AppRoutes.StudentLessonList.createRoute(courseId, courseName)
+                    ) {
                         popUpTo(AppRoutes.StudentDashboard.route) { inclusive = false }
                     }
                 },
@@ -266,14 +276,12 @@ fun AppNavGraph(
             )
         }
 
+        // ─── ALUMNO: LECCIONES DEL CURSO (desde Explorar) ──
         composable(
             route = AppRoutes.StudentLessonList.route,
             arguments = listOf(
                 navArgument("courseId") { type = NavType.IntType },
-                navArgument("courseName") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
+                navArgument("courseName") { type = NavType.StringType; defaultValue = "" }
             )
         ) { backStackEntry ->
             val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
@@ -282,6 +290,18 @@ fun AppNavGraph(
             StudentLessonListScreen(
                 cursoId = courseId,
                 courseName = courseName,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // ─── ALUMNO: PROGRESO DEL CURSO (desde Mis Cursos) ─
+        composable(
+            route = AppRoutes.MyCourseDetail.route,
+            arguments = listOf(navArgument("courseId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val courseId = backStackEntry.arguments?.getInt("courseId") ?: 0
+            MyCourseDetailScreen(
+                courseId = courseId,
                 onBackClick = { navController.popBackStack() }
             )
         }
