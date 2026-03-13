@@ -1,5 +1,10 @@
 package com.kull18.edutrack.features.course_registration.presentation.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,22 +24,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.kull18.edutrack.core.hardware.data.AndroidNotificacionManager
 
 private val PrimaryBlue = Color(0xFF3D5AFE)
 private val LightBlue = Color(0xFFE8EEFF)
@@ -51,6 +64,47 @@ fun EnrollmentConfirmationScreen(
     onGoToCourse: () -> Unit,
     onBackToCatalog: () -> Unit
 ) {
+    val context = LocalContext.current
+    val notificationManager = remember(context) {
+        AndroidNotificacionManager(context.applicationContext)
+    }
+    var notificationSent by rememberSaveable(courseId) { mutableStateOf(false) }
+
+    fun notifyEnrollmentOnce() {
+        if (notificationSent) return
+        val title = "Inscripcion confirmada"
+        val message = "Ya estas inscrito en: $courseName"
+        notificationManager.mostrarNotificacion(title, message)
+        notificationSent = true
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            notifyEnrollmentOnce()
+        }
+    }
+
+    LaunchedEffect(courseId) {
+        if (notificationSent) return@LaunchedEffect
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (granted) {
+                notifyEnrollmentOnce()
+            } else {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            notifyEnrollmentOnce()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -123,13 +177,13 @@ fun EnrollmentConfirmationScreen(
                 .padding(16.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // Categoría y rating
+                // Categoría
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Tag categoría
+                    // Tag categoria
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
@@ -141,23 +195,6 @@ fun EnrollmentConfirmationScreen(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = PrimaryBlue
-                        )
-                    }
-
-                    // Rating
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color(0xFFFBBF24),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "4.9",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary
                         )
                     }
                 }

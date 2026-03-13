@@ -21,8 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -273,37 +271,6 @@ fun MyCourseDetailScreen(
                 }
             }
 
-            // ─── Botón Evaluación Final ────────────────────
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { /* TODO: Iniciar evaluación final */ },
-                    enabled = progreso.porcentaje >= 1f,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue,
-                        disabledContainerColor = Color(0xFFE5E7EB)
-                    )
-                ) {
-                    Text(
-                        text = "🎓  Iniciar Evaluación Final",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (progreso.porcentaje >= 1f) Color.White else TextSecondary
-                    )
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Completa todas las lecciones para habilitar el certificado.",
-                    fontSize = 11.sp,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
         }
     }
 }

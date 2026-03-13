@@ -8,10 +8,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,7 +21,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.kull18.edutrack.features.course_registration.domain.entities.Inscripcion
+import com.kull18.edutrack.features.course_registration.presentation.viewmodels.CourseRegistrationViewModel
 import com.kull18.edutrack.presentation.navigation.EduTrackBottomBar
+import kotlin.math.roundToInt
 
 private val PrimaryBlue = Color(0xFF3D5AFE)
 private val LightBlue = Color(0xFFE8EEFF)
@@ -37,28 +41,27 @@ data class MyCourseUiModel(
     val progressPercentage: Float,
     val status: String, // "activo" | "completado"
     val lastAccessText: String,
-    val hasCertificate: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyCoursesScreen(
     navController: NavHostController,
+    modifier: Modifier = Modifier,
+    viewModel: CourseRegistrationViewModel = hiltViewModel(),
     onCourseClick: (MyCourseUiModel) -> Unit = {},
     onExploreCatalogClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     var selectedFilter by remember { mutableStateOf("Todos") }
     val filters = listOf("Todos", "Activos")
 
-    // Datos de prueba — reemplazar con ViewModel
-    val courses = remember {
-        listOf(
-            MyCourseUiModel(1, "Desarrollo Web Fullstack con React y Node.js", "Dr. Alejandro Méndez", null, 0.65f, "activo", "HOY, 10:30 AM"),
-            MyCourseUiModel(2, "Fundamentos de Diseño UI/UX para Aplicaciones Móviles", "Sra. Elena Rodríguez", null, 1.0f, "completado", "AYER, 18:45 PM", hasCertificate = true),
-            MyCourseUiModel(3, "Introducción a la Inteligencia Artificial y Machine Learning", "Ing. Roberto Gómez", null, 0.12f, "activo", "24 OCT, 2023"),
-            MyCourseUiModel(4, "Marketing Digital y Estrategia de Contenidos", "Lic. Patricia Luna", null, 0.45f, "activo", "20 OCT, 2023"),
-        )
+    val courses = remember(uiState.inscripciones) {
+        uiState.inscripciones.map { it.toMyCourseUiModel() }
+    }
+    val activeCourses = remember(courses) { courses.filter { it.status == "activo" } }
+    val overallProgressPercent = remember(courses) {
+        if (courses.isEmpty()) 0 else (courses.map { it.progressPercentage }.average() * 100).roundToInt()
     }
 
     val filteredCourses = if (selectedFilter == "Todos") courses
@@ -113,8 +116,14 @@ fun MyCoursesScreen(
                                 color = TextPrimary
                             )
                             Text(
-                                text = "Tienes ${filteredCourses.size} cursos en curso",
+                                text = "Tienes ${activeCourses.size} cursos en curso",
                                 fontSize = 13.sp,
+                                color = TextSecondary,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                            Text(
+                                text = "Progreso total: $overallProgressPercent%",
+                                fontSize = 12.sp,
                                 color = TextSecondary,
                                 modifier = Modifier.padding(top = 2.dp)
                             )
@@ -144,16 +153,60 @@ fun MyCoursesScreen(
 
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            // Lista de cursos
-            items(filteredCourses) { course ->
-                MyCourseItemCard(
-                    course = course,
-                    onClick = { onCourseClick(course) },
-                    modifier = Modifier
-                        .background(Color.White)
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                )
-                HorizontalDivider(color = Color(0xFFF3F4F6), thickness = 1.dp)
+            if (uiState.isLoading && courses.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PrimaryBlue)
+                    }
+                }
+            } else if (uiState.error != null && courses.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = uiState.error ?: "Ocurrió un error al cargar tus cursos",
+                            color = TextSecondary,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(onClick = { viewModel.loadCourses() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            } else if (filteredCourses.isEmpty()) {
+                item {
+                    Text(
+                        text = if (courses.isEmpty()) {
+                            "Aún no tienes cursos inscritos"
+                        } else {
+                            "No hay cursos activos en este filtro"
+                        },
+                        color = TextSecondary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
+            } else {
+                // Lista de cursos
+                items(filteredCourses) { course ->
+                    MyCourseItemCard(
+                        course = course,
+                        onClick = { onCourseClick(course) },
+                        modifier = Modifier
+                            .background(Color.White)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                    HorizontalDivider(color = Color(0xFFF3F4F6), thickness = 1.dp)
+                }
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -262,14 +315,14 @@ fun MyCourseItemCard(
             // Estado
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = if (isCompleted) "⊙ Completado" else "⊙ Activo",
+                    text = "⊙ ${(course.progressPercentage * 100).roundToInt()}% completado",
                     fontSize = 12.sp,
                     color = statusColor,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "${(course.progressPercentage * 100).toInt()}%",
+                    text = "${(course.progressPercentage * 100).roundToInt()}%",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -290,7 +343,7 @@ fun MyCourseItemCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Última vez + certificado
+            // Última vez
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -301,31 +354,39 @@ fun MyCourseItemCard(
                     color = TextSecondary,
                     letterSpacing = 0.3.sp
                 )
-                if (course.hasCertificate) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = GreenSuccess.copy(alpha = 0.1f)
-                    ) {
-                        Text(
-                            text = "Certificado Listo",
-                            fontSize = 10.sp,
-                            color = GreenSuccess,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
             }
         }
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Icon(
-            imageVector = Icons.Default.NavigateNext,
+            imageVector = Icons.AutoMirrored.Filled.NavigateNext,
             contentDescription = null,
             tint = TextSecondary,
             modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
+
+private fun Inscripcion.toMyCourseUiModel(): MyCourseUiModel {
+    val normalizedProgress = progreso.toFloat().let { raw ->
+        if (raw > 1f) raw / 100f else raw
+    }.coerceIn(0f, 1f)
+
+    val status = if (normalizedProgress >= 1f) {
+        "completado"
+    } else {
+        "activo"
+    }
+
+    return MyCourseUiModel(
+        id = cursoId,
+        name = cursoNombre,
+        instructorName = instructorNombre,
+        instructorImageUrl = null,
+        progressPercentage = normalizedProgress,
+        status = status,
+        lastAccessText = fechaInscripcion.takeIf { it.isNotBlank() } ?: "SIN FECHA",
+    )
+}
+
