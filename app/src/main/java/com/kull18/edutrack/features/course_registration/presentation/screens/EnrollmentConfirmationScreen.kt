@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,7 +46,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.kull18.edutrack.core.hardware.data.AndroidNotificacionManager
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kull18.edutrack.features.course_registration.presentation.viewmodels.EnrollmentConfirmationViewModel
 
 private val PrimaryBlue = Color(0xFF3D5AFE)
 private val LightBlue = Color(0xFFE8EEFF)
@@ -62,19 +62,15 @@ fun EnrollmentConfirmationScreen(
     courseName: String,
     instructorName: String,
     onGoToCourse: () -> Unit,
-    onBackToCatalog: () -> Unit
+    onBackToCatalog: () -> Unit,
+    viewModel: EnrollmentConfirmationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val notificationManager = remember(context) {
-        AndroidNotificacionManager(context.applicationContext)
-    }
     var notificationSent by rememberSaveable(courseId) { mutableStateOf(false) }
 
     fun notifyEnrollmentOnce() {
         if (notificationSent) return
-        val title = "Inscripcion confirmada"
-        val message = "Ya estas inscrito en: $courseName"
-        notificationManager.mostrarNotificacion(title, message)
+        viewModel.notifyEnrollmentIfNeeded(courseId, courseName)
         notificationSent = true
     }
 
