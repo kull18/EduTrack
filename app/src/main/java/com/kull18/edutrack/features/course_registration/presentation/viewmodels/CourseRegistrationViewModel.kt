@@ -5,8 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.kull18.edutrack.features.course_registration.domain.usecases.EnrollInCourseUseCase
 import com.kull18.edutrack.features.course_registration.domain.usecases.GetAvailableCoursesUseCase
 import com.kull18.edutrack.features.course_registration.domain.usecases.GetMisInscripcionesUseCase
+import com.kull18.edutrack.features.course_registration.domain.usecases.GetProgresoUseCase
 import com.kull18.edutrack.features.course_registration.presentation.screens.CourseRegistrationUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,7 +21,8 @@ import javax.inject.Inject
 class CourseRegistrationViewModel @Inject constructor(
     private val getAvailableCoursesUseCase: GetAvailableCoursesUseCase,
     private val enrollInCourseUseCase: EnrollInCourseUseCase,
-    private val getMisInscripcionesUseCase: GetMisInscripcionesUseCase
+    private val getMisInscripcionesUseCase: GetMisInscripcionesUseCase,
+    private val getProgresoUseCase: GetProgresoUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CourseRegistrationUIState())
@@ -37,10 +42,12 @@ class CourseRegistrationViewModel @Inject constructor(
             val coursesResult = getAvailableCoursesUseCase()
             // Cargar mis inscripciones para saber cuáles ya están inscritos
             val inscripcionesResult = getMisInscripcionesUseCase()
+            val inscripcionesConProgreso = inscripcionesResult.getOrDefault(emptyList())
+                .let { enrichInscripcionesWithProgress(it) }
 
             _uiState.update { current ->
                 val courses = coursesResult.getOrDefault(emptyList())
-                val inscripciones = inscripcionesResult.getOrDefault(emptyList())
+                val inscripciones = inscripcionesConProgreso
                 val enrolledIds = inscripciones.map { it.cursoId }.toSet()
 
                 val error = coursesResult.exceptionOrNull()?.message
@@ -55,6 +62,41 @@ class CourseRegistrationViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun enrichInscripcionesWithProgress(
+        inscripciones: List<com.kull18.edutrack.features.course_registration.domain.entities.Inscripcion>
+    ): List<com.kull18.edutrack.features.course_registration.domain.entities.Inscripcion> = coroutineScope {
+        inscripciones.map { inscripcion ->
+            async {
+                val progresoResult = getProgresoUseCase(inscripcion.id)
+                val progreso = progresoResult.getOrNull()
+
+                if (progreso == null) {
+                    inscripcion
+                } else {
+                    val porcentaje = when {
+                        (progreso.totalLecciones ?: 0) > 0 -> {
+                            (progreso.leccionesCompletadas ?: 0).toDouble() /
+                                (progreso.totalLecciones ?: 1).toDouble()
+                        }
+                        progreso.progresoTotal != null -> {
+                            if (progreso.progresoTotal > 1.0) {
+                                progreso.progresoTotal / 100.0
+                            } else {
+                                progreso.progresoTotal
+                            }
+                        }
+                        else -> 0.0
+                    }.coerceIn(0.0, 1.0)
+
+                    inscripcion.copy(
+                        progreso = porcentaje,
+                        estado = if (porcentaje >= 1.0) "completado" else "activo"
+                    )
+                }
+            }
+        }.awaitAll()
     }
 
     fun loadCourses() {
